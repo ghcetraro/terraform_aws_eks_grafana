@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata: 
+  name: grafana
+  labels:
+    app: grafana
+  namespace: monitoring
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      name: grafana
+      labels: 
+        app: grafana
+    spec:
+      initContainers:
+      - name: permisos-confg
+        command:
+        - sh
+        - -c
+        - chmod -R 777 /var/lib/grafana
+        image: busybox:latest
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - name: grafana-persistent-storage
+          mountPath: /var/lib/grafana
+      #
+      containers:
+      - name: grafana
+        image: grafana/grafana:9.0.0
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: grafana-persistent-storage
+          mountPath: /var/lib/grafana
+        - name: grafana-dashboard-config
+          mountPath: /etc/grafana/provisioning/dashboards
+        - name: grafana-datasource-influxdb
+          mountPath: /etc/grafana/provisioning/datasources/influxdb_source.yaml
+          subPath: influxdb_source.yaml
+        - name: grafana-datasource-loki
+          mountPath: /etc/grafana/provisioning/datasources/loki_source.yaml
+          subPath: loki_source.yaml
+        - name: grafana-config-ini
+          mountPath: /etc/grafana/grafana.ini
+          subPath: grafana.ini
+      #
+      volumes:
+      - name: grafana-persistent-storage
+        persistentVolumeClaim:
+          claimName: grafana
+      - name: grafana-dashboard-config
+        configMap:
+          name: grafana-dashboard-config
+      - name: grafana-datasource-influxdb
+        configMap:
+          name: grafana-datasource-influxdb
+      - name: grafana-datasource-loki
+        configMap:
+          name: grafana-datasource-loki
+      - name: grafana-config-ini
+        configMap:
+          name: grafana-config-ini

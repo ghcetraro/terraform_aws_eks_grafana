@@ -1,0 +1,22 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chronograf
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: chronograf
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: chronograf
+    spec:
+      containers:
+        - name: chronograf
+          image: chronograf:latest
+          ports:
+            - containerPort: 8888
+      restartPolicy: Always

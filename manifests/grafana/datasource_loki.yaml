@@ -1,0 +1,19 @@
+---
+kind: ConfigMap
+apiVersion: v1
+data:
+  loki_source.yaml: |
+    apiVersion: 1
+
+    datasources:
+      - name: Loki
+        type: loki
+        url: http://loki:3100
+        isDefault: false
+        uid: loki
+        access: proxy
+        editable: false
+
+metadata:
+  name: grafana-datasource-loki
+  namespace: monitoring
