@@ -1,103 +1,101 @@
-# README
+# Grafana en EKS
 
-This repository is used to install grafana in eks of aws with terraform
+[![License: MIT](https://img.shields.io/github/license/ghcetraro/terraform_aws_eks_grafana)](LICENSE)
+[![Terraform](https://img.shields.io/badge/terraform-1.x-7B42BC.svg)](https://www.terraform.io/)
+[![AWS](https://img.shields.io/badge/AWS-compatible-FF9900.svg)](https://aws.amazon.com/)
+[![CI](https://github.com/ghcetraro/terraform_aws_eks_grafana/actions/workflows/ci.yml/badge.svg)](https://github.com/ghcetraro/terraform_aws_eks_grafana/actions/workflows/ci.yml)
 
-## Locals
-
-	The missing information of the external components required needs to be completed
-```
-    id                         = " " # to fill 
-    endpoint                   = " " # to fill 
-    certificate_authority_data = " " # to fill 
-    oidc_issuer_url            = " " # to fill 
-```
-
-## Configuration with aws sso
-
-  - You need to create/configure your parameters in the following file  
-```
-    terraform.tfvars
-```
-
-  - You need to create your profile in your .aws/config and .aws/credentials
-
-.aws/config  
-```
-	[profile devops]
-	sso_start_url=<url>
-	sso_region=<region>
-	sso_account_id=<account id>
-	sso_role_name=<role name>
-	region=<defaul region>
-	output=json
-```
-
-  - Run to obtain the credentials
-
-  	aws sso login --profile devops
-
-## Running
-
-To run the following scripts, you will need to have ADMIN privileges.
-
-  Following 3 commands need to be executed for every deployment
-``` 
-  terraform init 
-  terraform plan 
-  terraform apply 
-```
-
-## Pre-requisites
-
-- Terraform CLI is [installed](https://learn.hashicorp.com/tutorials/terraform/install-cli).  
-- AWS CLI [installed](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html).  
-
-## Terraform Scripts
-``` 
-  data.tf  
-  locals.tf  
-  main.tf  
-  providers.tf  
-  variables.tf
-``` 
-
-## Resources
-
-Resources that are going to be deployed  
-```
-	EKS
-		secrets
-		configmap
-		service account
-		role
-		role attachment
-```
-
-## Dependencies
-	
-	VPC
-	EKS
-
-## How to access without an alb
-
-	kubectl port-forward service/grafana 3000:3000 -n monitoring
-
-	Default password:
-
-		admin : admin
+**Grafana en EKS con Terraform — observabilidad lista para conectar a Prometheus**
 
 ---
 
-## Documentación del proyecto
+## El problema
 
+Levantar Grafana en el cluster suele quedar como chart ad-hoc, sin el mismo estándar de IaC que el resto de la plataforma.
+
+## La solución
+
+Módulo Terraform + manifests para desplegar Grafana en EKS de forma reproducible (timezone y lookback alineables a operación).
+
+```mermaid
+flowchart LR
+  TF[Terraform] --> G[Grafana en EKS]
+  PROM[Prometheus] --> G
+  U[Equipos] --> G
+```
+
+---
+
+## Características
+
+| Área | Detalle |
+|------|---------|
+| **Grafana** | Despliegue en EKS vía Terraform |
+| **Manifests** | Configuración versionada en el repo |
+| **IaC** | Mismo flujo init/plan/apply |
+| **Ops** | Pensado para conectar Prometheus/datasources |
+
+---
+
+## Limitaciones y disclaimer
+
+- Pensado como **punto de partida / referencia**: revisá roles IAM, redes y secretos antes de producción.
+- Requiere **credenciales AWS** (recomendado SSO) y, en módulos EKS, acceso al cluster (kubeconfig / exec).
+- Completá `locals` y variables según tu cuenta; los ejemplos usan valores ficticios.
+- Software open source “as is” — probá primero en un ambiente no productivo.
+
+---
+
+## Stack
+
+Terraform · EKS · Grafana · Kubernetes manifests
+
+---
+
+## Inicio rápido
+
+### Requisitos
+
+- Terraform CLI 1.x
+- AWS CLI configurado (`aws sso login` o credenciales)
+- Permisos de administración en la cuenta / cluster según el módulo
+
+### Configuración
+
+```bash
+# En cada módulo: copiá la plantilla (no commitear terraform.tfvars)
+cp terraform.tfvars.example terraform.tfvars
+```
+
+Valores de ejemplo: `terraform.tfvars.example`
+
+### Apply
+
+```bash
+cp terraform.tfvars.example terraform.tfvars
+# Editar valores (cuenta, región, cluster, etc.)
+
+terraform init
+terraform plan
+terraform apply
+```
+
+---
+
+## Documentación
+
+- [Uso y despliegue](docs/uso.md)
+- [Presentación / LinkedIn](docs/PRESENTACION.md)
+- [Speech para LinkedIn](docs/speech-linkedin.md)
 - [Changelog](CHANGELOG.md)
 - [Contribuir](CONTRIBUTING.md)
+- [Seguridad](SECURITY.md)
 
 ---
 
 ## Seguridad
 
-No commitees secretos, tfvars con credenciales reales ni archivos de state.
+**No commitees** `terraform.tfvars`, state, claves ni tokens. Usá `*.tfvars.example` como plantilla.
 
 Ver [SECURITY.md](SECURITY.md).
 
@@ -107,3 +105,10 @@ Ver [SECURITY.md](SECURITY.md).
 
 [MIT](LICENSE) — Copyright (c) Gabriel Cetraro
 
+---
+
+## Autor
+
+Proyecto open source de **Gabriel Cetraro** — automatización de infraestructura, AWS, Kubernetes y observabilidad.
+
+Si te resulta útil, ⭐ en GitHub ayuda a darle visibilidad.
